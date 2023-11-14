@@ -9,6 +9,7 @@ typedef struct _node
     double var; /* variance */
     struct _node* next; /* qnode ’1° fils’ dans le niveau suivant */
 } qnode;
+
 typedef struct
 {
     qnode** map; /* pointeur d’accès aux niveaux intermédiaires [0...depth] */
