@@ -1,0 +1,16 @@
+# répertoire pour les sources .c
+SRC = src/
+
+# répertoire pour les objets .o
+OBJ = obj/
+
+# répertoire pour les lib
+LIB = lib/
+
+# répertoire pour les dépendances
+INCLUDE = include/
+
+dirs = $(SRC) $(OBJ) $(INCLUDE)
+
+# règle de compilation stockant les fichiers include, src et obj dans le répertoire lib
+% : echo $(shell zip "$(LIB)archive_$$(date +"%d%m%y_%H-%S").zip" $(foreach dir,$(dirs), echo $(dir)*))

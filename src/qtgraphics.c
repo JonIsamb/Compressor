@@ -50,8 +50,8 @@ extern void qtree_show_grid(qtree* qt)
     glScalef(dx,-dy,1.);
     /*! appel sur racine du QTree :
      * ATTENTION A L'OFFSET (-qt->width/2) pour centrage sur l'image */
-    int xu = -qt->imgw/2; /*! coin supérieur... */
-    int yl = -qt->imgh/2; /*! .... gauche       */
+    int xu = (1 << qt->depth); /*! coin supérieur... */
+    int yl = (1 << qt->depth); /*! .... gauche       */
     qnode_show_grid(qt->map[0],xu,yl,(1<<qt->depth));
   glPopMatrix();
 }
@@ -98,8 +98,8 @@ extern void qtree_show_bloc(qtree* qt)
     glScalef(dx,-dy,1.);
     /*! appel sur racine du QTree :
      * ATTENTION A L'OFFSET (-qt->width/2) pour centrage sur l'image */
-    int xu = -qt->imgw/2; /*! coin supérieur... */
-    int yl = -qt->imgh/2; /*! .... gauche       */
+    int xu = (1 << qt->depth); /*! coin supérieur... */
+    int yl = (1 << qt->depth); /*! .... gauche       */
     qnode_show_bloc(qt->map[0],xu,yl,(1<<qt->depth));
   glPopMatrix();
 }
