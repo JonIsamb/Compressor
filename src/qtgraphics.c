@@ -1,3 +1,4 @@
+
 #include <g2x.h>
 #include <qtree.h>
 
@@ -5,7 +6,6 @@
    Affichage d'une grille depuis le QuadTree
    --   en sur-impression sur le pixmap   --
    ---------------------------------------!*/
-/*! un carré, plein ou juste le tour      !*/
 static void square(int xu, int yl, int w)
 {
   #ifdef _FILL_MODE_
@@ -20,8 +20,10 @@ static void square(int xu, int yl, int w)
 static void qnode_show_grid(qnode* node, int xu, int yl, int w)
 {
 	if (!node) return; /*! sécurité - ne devrait jamais arriver */
+
   /*! noeud uniforme (par filtrage) : un rectangle et on s'en va */
 	if (node->uni) return square(xu,yl,w);
+
   /*! noeud non uniforme : on descend voir les fils */
 	w /= 2;
   switch (w)
@@ -41,7 +43,6 @@ static void qnode_show_grid(qnode* node, int xu, int yl, int w)
   }
 }
 
-/*! trace la grille du QuadTree !*/
 extern void qtree_show_grid(qtree* qt)
 {
   double dx = g2x_GetZoom()*g2x_GetXPixSize(); /*! facteur d'échelle en x */
@@ -50,8 +51,8 @@ extern void qtree_show_grid(qtree* qt)
     glScalef(dx,-dy,1.);
     /*! appel sur racine du QTree :
      * ATTENTION A L'OFFSET (-qt->width/2) pour centrage sur l'image */
-    int xu = (1 << qt->depth); /*! coin supérieur... */
-    int yl = (1 << qt->depth); /*! .... gauche       */
+    int xu = -(1<<qt->depth)/2; /*! coin supérieur... */
+    int yl = -(1<<qt->depth)/2; /*! .... gauche       */
     qnode_show_grid(qt->map[0],xu,yl,(1<<qt->depth));
   glPopMatrix();
 }
@@ -63,6 +64,7 @@ extern void qtree_show_grid(qtree* qt)
 static void pixbloc(qnode* node, int xu, int yl, int w)
 {
     double g=node->moy/255.;
+    //double u=node->uni?0.8*(1.-1./w):1.0;
     g2x_FillRectangle(xu,yl,xu+w,yl+w,(G2Xcolor){g,g,g,0});
 }
 
@@ -98,18 +100,18 @@ extern void qtree_show_bloc(qtree* qt)
     glScalef(dx,-dy,1.);
     /*! appel sur racine du QTree :
      * ATTENTION A L'OFFSET (-qt->width/2) pour centrage sur l'image */
-    int xu = (1 << qt->depth); /*! coin supérieur... */
-    int yl = (1 << qt->depth); /*! .... gauche       */
+    int xu = -(1<<qt->depth)/2; /*! coin supérieur... */
+    int yl = -(1<<qt->depth)/2; /*! .... gauche       */
     qnode_show_bloc(qt->map[0],xu,yl,(1<<qt->depth));
   glPopMatrix();
 }
 
 /*!--------------------------------------- *
- * Affichage de l'histogramme              *
+ * Affichage de l'histogramme      *
  * ---------------------------------------!*/
 extern void qtree_show_histo(int *Hist, int nbsymb)
 {
-  int    *h  =NULL;
+  int    *h,i;
 	double  max=0.;
 
   /* 1°) extraction du max. */
@@ -124,7 +126,7 @@ extern void qtree_show_histo(int *Hist, int nbsymb)
          xr=xl+width,
          yd=g2x_GetYMin(),
          yu;
-  for (h=Hist; h<Hist+nbsymb; h++)
+  for ((h=Hist,i=0); h<Hist+nbsymb; (h++,i++))
   {
     yu = yd+*h*max;
     g2x_FillRectangle(xl,yd,xr,yu,G2Xr_a);
@@ -132,3 +134,48 @@ extern void qtree_show_histo(int *Hist, int nbsymb)
     xr += width;
   }
 }
+
+/*!--------------------------------------- *
+ * Affichage gnuplot de l'histogramme      *
+ * ---------------------------------------!*/
+extern bool qtree_plothisto(char* name, qtree *qt, int nsymb)
+{
+  FILE   *output;
+  int    *h,i;
+	int     max=0;
+  static char filename[256]="";
+  static char command[256];
+	int    *Hist=NULL;
+
+	if (!qtree_hist(qt,&Hist,nsymb)) return false;
+
+  /* creation du fichier de points */
+  sprintf(filename,"qt%d.hist",nsymb);
+  if (!(output=fopen(filename,"w"))) return false;
+
+  h = Hist;
+	i=0;
+	while(h<Hist+nsymb)
+	{
+		max = MAX(max,*h);
+		fprintf(output,"%3d %5d\n",i,*h);
+		h++;
+		i++;
+	}
+  fflush(output);
+	free(Hist);
+
+  if (!(output=fopen(".plottmp","w"))) return false;
+  fprintf(output,"set xrange[%d:%d]\n",0,nsymb);
+  fprintf(output,"set yrange[0:%d]\n",max);
+  fprintf(output,"plot \"%s\" with line\n",filename);
+  fflush(output);
+  fclose(output);
+
+  system("gnuplot -persist .plottmp");
+  sprintf(command,"rm -f .plottmp qt*.hist");
+  system(command);
+
+  return true;
+}
+

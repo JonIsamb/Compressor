@@ -34,21 +34,15 @@ LFLAGS = $(libG2X)$(LANG)$(gdb)
 # répertoire pour les sources .c
 SRC = src/
 
-# répertoire pour les objets .o
-OBJ = obj/
-
-# liste des modules locaux (à compléter)
-MODS  = utils.o
-
-# dépendances utilisées
-qtree : $(OBJ)utils.o $(OBJ)qtree.o
-
 # règle générique de création de xxx.o à partir de SRC/xxx.c
-$(OBJ)%.o : $(SRC)%.c
+%.o : $(SRC)%.c
 	$(CC) $(STD) $(CFLAGS) $(PFLAGS) -c $< -o $@
 
+exec : utils.o qtgraphics.o qtree.o qtcio.o main.o
+	$(CC) $^ $(LFLAGS) -o $@
+
 # regle de compilation generique (1 seul fichier local a compiler)
-% : $(OBJ)%.o $(MODS)
+% : %.o
 	$(CC) $^ $(LFLAGS) -o $@
 
 #-- Nettoyage
