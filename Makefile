@@ -38,7 +38,7 @@ SRC = src/
 %.o : $(SRC)%.c
 	$(CC) $(STD) $(CFLAGS) $(PFLAGS) -c $< -o $@
 
-exec : utils.o qtgraphics.o qtree.o qtcio.o main.o
+codec : utils.o qtgraphics.o qtree.o qtcio.o main.o
 	$(CC) $^ $(LFLAGS) -o $@
 
 # regle de compilation generique (1 seul fichier local a compiler)

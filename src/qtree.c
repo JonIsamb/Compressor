@@ -94,18 +94,18 @@ static uchar pixmap_to_qnode(G2Xpixmap *img, qnode * node, int x, int y, int siz
     }
 
     // VARIANCE
-    // node->var = 0;
-    // for (next=node->next; next<node->next+4; next++) {
-    //     node->var += next->var + SQR(sum-4*next->moy);
-    // }
-    // node->var /= 4.;
+    node->var = 0;
+    for (next=node->next; next<node->next+4; next++) {
+        node->var += next->var + SQR(sum-4*next->moy);
+    }
+    node->var /= 4.;
     
     node->err = (uchar)sum%4;
     if (node->err != 0) {
         node->uni = 0;
     }
 
-    fprintf(stderr, "[m:%3d|e:%d|u:%d|>%p]\n",node->moy, node->err, node->uni, node->next);
+    //fprintf(stderr, "[m:%3d|e:%d|u:%d|>%p]\n",node->moy, node->err, node->uni, node->next);
 
     return (ushort)node->moy;
 
